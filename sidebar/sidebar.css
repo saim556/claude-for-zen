@@ -678,33 +678,21 @@ body {
   color: var(--text-muted);
 }
 
-/* Auth Bar (in chat screen) */
+/* Auth Bar (below input) */
 .auth-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 14px;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
+  padding: 4px 14px;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border);
   flex-shrink: 0;
-}
-
-.auth-bar-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.auth-bar-icon {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--success);
 }
 
 .auth-bar-label {
   font-size: 11px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
+  text-transform: capitalize;
 }
 
 .model-switcher {

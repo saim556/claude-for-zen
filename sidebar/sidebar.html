@@ -95,19 +95,6 @@
       </div>
     </header>
 
-    <!-- Auth info bar -->
-    <div id="auth-bar" class="auth-bar hidden">
-      <div class="auth-bar-left">
-        <span id="auth-bar-icon" class="auth-bar-icon"></span>
-        <span id="auth-bar-label" class="auth-bar-label"></span>
-      </div>
-      <select id="model-switcher" class="model-switcher">
-        <option value="claude-sonnet-4-5-20250929">Sonnet 4.5</option>
-        <option value="claude-opus-4-6">Opus 4.6</option>
-        <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
-      </select>
-    </div>
-
     <!-- Domain Permission Banner -->
     <div id="permission-banner" class="permission-banner hidden">
       <div class="permission-content">
@@ -154,6 +141,16 @@
       <div class="input-footer">
         <span id="page-context" class="page-context"></span>
       </div>
+    </div>
+
+    <!-- Auth bar (below input) -->
+    <div id="auth-bar" class="auth-bar hidden">
+      <span id="auth-bar-label" class="auth-bar-label"></span>
+      <select id="model-switcher" class="model-switcher">
+        <option value="claude-sonnet-4-5-20250929">Sonnet 4.5</option>
+        <option value="claude-opus-4-6">Opus 4.6</option>
+        <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
+      </select>
     </div>
   </div>
 

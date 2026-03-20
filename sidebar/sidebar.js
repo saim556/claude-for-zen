@@ -40,7 +40,6 @@ const allowDomainBtn = document.getElementById("allow-domain-btn");
 const denyDomainBtn = document.getElementById("deny-domain-btn");
 const pageContext = document.getElementById("page-context");
 const authBar = document.getElementById("auth-bar");
-const authBarIcon = document.getElementById("auth-bar-icon");
 const authBarLabel = document.getElementById("auth-bar-label");
 const modelSwitcher = document.getElementById("model-switcher");
 
@@ -94,12 +93,10 @@ function showChatScreen(state) {
 function updateAuthBar(state) {
   authBar.classList.remove("hidden");
   if (state.authMode === "pro") {
-    const plan = state.proPlanType || "pro";
-    authBarLabel.textContent = `${state.proDisplayName || "Claude"} (${plan})`;
-    authBarIcon.style.background = "var(--success)";
+    const plan = state.proPlanType || "Pro";
+    authBarLabel.textContent = plan;
   } else {
-    authBarLabel.textContent = "API Key";
-    authBarIcon.style.background = "var(--accent)";
+    authBarLabel.textContent = "API";
   }
 }
 

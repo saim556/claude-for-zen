@@ -35,13 +35,12 @@ async function loadSettings() {
   }
   renderDomainList(data.allowedDomains || {});
 
-  // Load behavior settings
-  const settingsResult = await browser.runtime.sendMessage({ type: "GET_SETTINGS" });
-  if (settingsResult.settings) {
-    toggleAutoAllow.checked = settingsResult.settings.autoAllowDomains || false;
-    toggleAutoScreenshot.checked = settingsResult.settings.autoScreenshot || false;
-    toggleStreaming.checked = settingsResult.settings.streamingAnimation !== false;
-  }
+  // Load behavior settings (read directly from storage as primary source)
+  const settingsData = await browser.storage.local.get(["settings"]);
+  const saved = settingsData.settings || {};
+  toggleAutoAllow.checked = saved.autoAllowDomains || false;
+  toggleAutoScreenshot.checked = saved.autoScreenshot || false;
+  toggleStreaming.checked = saved.streamingAnimation !== false;
 
   // Show account state
   await refreshAccountState();
@@ -159,15 +158,24 @@ clearDomainsBtn.addEventListener("click", async () => {
 });
 
 // Behavior toggle handlers
-function onSettingToggle() {
-  browser.runtime.sendMessage({
-    type: "SET_SETTINGS",
-    settings: {
-      autoAllowDomains: toggleAutoAllow.checked,
-      autoScreenshot: toggleAutoScreenshot.checked,
-      streamingAnimation: toggleStreaming.checked
-    }
-  });
+async function onSettingToggle() {
+  const newSettings = {
+    autoAllowDomains: toggleAutoAllow.checked,
+    autoScreenshot: toggleAutoScreenshot.checked,
+    streamingAnimation: toggleStreaming.checked
+  };
+
+  // Save directly to storage
+  await browser.storage.local.set({ settings: newSettings });
+
+  // Also update background script in-memory state
+  try {
+    await browser.runtime.sendMessage({ type: "SET_SETTINGS", settings: newSettings });
+  } catch (e) {
+    // Background message failed, but storage save already succeeded
+  }
+
+  showStatus("Setting saved.", "success");
 }
 
 toggleAutoAllow.addEventListener("change", onSettingToggle);

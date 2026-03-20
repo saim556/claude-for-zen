@@ -91,6 +91,11 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
+// Address bar button toggles the sidebar
+browser.pageAction.onClicked.addListener(() => {
+  browser.sidebarAction.toggle();
+});
+
 // Track active tab changes to update sidebar context
 browser.tabs.onActivated.addListener(async (activeInfo) => {
   try {
