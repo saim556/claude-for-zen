@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Claude for Zen",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A helping hand across all your tabs. Claude can navigate, click, and fill forms in your browser.",
   "author": "Claude for Zen",
 
