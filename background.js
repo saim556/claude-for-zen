@@ -20,12 +20,20 @@ let apiKey = null;
 let model = "claude-sonnet-4-5-20250929";
 let proSession = null;         // { orgId, displayName, email }
 
+// Settings with defaults
+let settings = {
+  autoAllowDomains: false,     // skip per-domain permission prompts
+  autoScreenshot: false,       // auto-capture screenshot with every message
+  streamingAnimation: true     // animate text reveal
+};
+
 // Load saved settings on startup
-browser.storage.local.get(["apiKey", "model", "allowedDomains", "authMode"]).then((data) => {
+browser.storage.local.get(["apiKey", "model", "allowedDomains", "authMode", "settings"]).then((data) => {
   if (data.apiKey) apiKey = data.apiKey;
   if (data.model) model = data.model;
   if (data.allowedDomains) allowedDomains = data.allowedDomains;
   if (data.authMode) authMode = data.authMode;
+  if (data.settings) settings = { ...settings, ...data.settings };
 
   // If pro mode, check session on startup
   if (authMode === "pro") {
@@ -71,6 +79,12 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     case "SET_MODEL":
       return handleSetModel(message);
+
+    case "SET_SETTINGS":
+      return handleSetSettings(message);
+
+    case "GET_SETTINGS":
+      return Promise.resolve({ settings });
 
     default:
       return Promise.resolve({ error: "Unknown message type" });
@@ -229,6 +243,12 @@ async function handleSetModel(message) {
   return { success: true };
 }
 
+async function handleSetSettings(message) {
+  settings = { ...settings, ...message.settings };
+  await browser.storage.local.set({ settings });
+  return { success: true, settings };
+}
+
 // ==========================================
 // STATE
 // ==========================================
@@ -249,6 +269,7 @@ async function handleGetState() {
     proDisplayName: proSession?.displayName || null,
     proPlanType: proSession?.planType || null,
     model,
+    settings,
     allowedDomains,
     activeTab: tab ? { id: tab.id, url: tab.url, title: tab.title } : null
   };
@@ -498,7 +519,7 @@ async function handleExecuteAction(message) {
 
   const domain = getDomain(tab.url);
 
-  if (!allowedDomains[domain]) {
+  if (!settings.autoAllowDomains && !allowedDomains[domain]) {
     return { error: `Permission not granted for ${domain}. Please allow access first.` };
   }
 

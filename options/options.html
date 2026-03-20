@@ -73,6 +73,41 @@
       <div id="api-status" class="status hidden"></div>
     </section>
 
+    <!-- Behavior -->
+    <section class="card">
+      <h2>Behavior</h2>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-label">Auto-allow all domains</span>
+          <span class="toggle-desc">Skip the permission prompt — Claude can interact with any site immediately (except blocked sites).</span>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-auto-allow">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-label">Auto-capture screenshots</span>
+          <span class="toggle-desc">Automatically take a screenshot of the page with every message you send.</span>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-auto-screenshot">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-label">Streaming animation</span>
+          <span class="toggle-desc">Show Claude's response with a typing animation instead of all at once.</span>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-streaming" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </section>
+
     <!-- Domain Permissions -->
     <section class="card">
       <h2>Domain Permissions</h2>

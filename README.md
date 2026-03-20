@@ -41,14 +41,13 @@ Built as the Zen/Firefox equivalent of [Claude for Chrome](https://claude.com/cl
 To keep the extension across browser restarts:
 
 1. Go to `about:config` in Zen Browser
-2. Set `xpinstall.signatures.required` to `false`
-3. Go to `about:addons` → gear icon → **"Install Add-on From File..."**
-4. Select the `manifest.json` or package the extension as a `.xpi`:
-   ```
-   cd claude-for-zen
-   zip -r claude-for-zen.xpi * -x ".*" -x "sk/*" -x "generate_icons.py" -x "nul"
-   ```
-5. Then install the `.xpi` file through `about:addons`
+2. Search for `xpinstall.signatures.required` and set it to `false`
+3. Build the `.xpi` package:
+   - **Windows:** Double-click `build.bat` in the project folder
+   - **Linux/Mac:** `cd claude-for-zen && zip -r claude-for-zen.xpi manifest.json background.js content/ sidebar/ options/ icons/`
+4. Go to `about:addons` → gear icon → **"Install Add-on From File..."**
+5. Select the `claude-for-zen.xpi` file
+6. The extension is now permanent and survives browser restarts
 
 ## Setup
 
@@ -88,6 +87,9 @@ Before Claude can interact with any domain, you'll see a permission banner at th
 Click the gear icon to open the settings page where you can:
 - View/change your auth method
 - Update your API key or model
+- **Auto-allow all domains** — skip the permission prompt for every site
+- **Auto-capture screenshots** — automatically screenshot the page with every message
+- **Streaming animation** — toggle the Claude-style typing animation on/off
 - Manage domain permissions
 - Revoke all permissions at once
 

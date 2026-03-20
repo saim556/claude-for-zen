@@ -18,6 +18,11 @@ const proPlanLabel = document.getElementById("pro-plan-label");
 const logoutProBtn = document.getElementById("logout-pro");
 const loginFromSettings = document.getElementById("login-from-settings");
 
+// Behavior toggles
+const toggleAutoAllow = document.getElementById("toggle-auto-allow");
+const toggleAutoScreenshot = document.getElementById("toggle-auto-screenshot");
+const toggleStreaming = document.getElementById("toggle-streaming");
+
 // Load saved settings
 async function loadSettings() {
   const data = await browser.storage.local.get(["apiKey", "model", "allowedDomains", "authMode"]);
@@ -29,6 +34,14 @@ async function loadSettings() {
     modelSelect.value = data.model;
   }
   renderDomainList(data.allowedDomains || {});
+
+  // Load behavior settings
+  const settingsResult = await browser.runtime.sendMessage({ type: "GET_SETTINGS" });
+  if (settingsResult.settings) {
+    toggleAutoAllow.checked = settingsResult.settings.autoAllowDomains || false;
+    toggleAutoScreenshot.checked = settingsResult.settings.autoScreenshot || false;
+    toggleStreaming.checked = settingsResult.settings.streamingAnimation !== false;
+  }
 
   // Show account state
   await refreshAccountState();
@@ -144,6 +157,22 @@ clearDomainsBtn.addEventListener("click", async () => {
   renderDomainList({});
   showStatus("All domain permissions revoked.", "success");
 });
+
+// Behavior toggle handlers
+function onSettingToggle() {
+  browser.runtime.sendMessage({
+    type: "SET_SETTINGS",
+    settings: {
+      autoAllowDomains: toggleAutoAllow.checked,
+      autoScreenshot: toggleAutoScreenshot.checked,
+      streamingAnimation: toggleStreaming.checked
+    }
+  });
+}
+
+toggleAutoAllow.addEventListener("change", onSettingToggle);
+toggleAutoScreenshot.addEventListener("change", onSettingToggle);
+toggleStreaming.addEventListener("change", onSettingToggle);
 
 function showStatus(msg, type) {
   apiStatus.textContent = msg;

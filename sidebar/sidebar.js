@@ -8,6 +8,11 @@ let currentTab = null;
 let pendingScreenshot = null;
 let isStreaming = false;
 let loginAbortController = null;
+let currentSettings = {
+  autoAllowDomains: false,
+  autoScreenshot: false,
+  streamingAnimation: true
+};
 
 // --- DOM refs ---
 const setupScreen = document.getElementById("setup-screen");
@@ -45,6 +50,8 @@ const modelSwitcher = document.getElementById("model-switcher");
 
 async function init() {
   const state = await browser.runtime.sendMessage({ type: "GET_STATE" });
+
+  if (state.settings) currentSettings = { ...currentSettings, ...state.settings };
 
   if (state.authMode === "pro" && state.proLoggedIn) {
     showChatScreen(state);
@@ -202,7 +209,9 @@ function updateTabContext(tab) {
 
 async function checkDomainPermission(domain) {
   const state = await browser.runtime.sendMessage({ type: "GET_STATE" });
-  if (state.allowedDomains && state.allowedDomains[domain]) {
+  if (state.settings) currentSettings = { ...currentSettings, ...state.settings };
+
+  if (currentSettings.autoAllowDomains || (state.allowedDomains && state.allowedDomains[domain])) {
     permissionBanner.classList.add("hidden");
   } else if (domain && !domain.startsWith("about:") && !domain.startsWith("moz-extension:")) {
     permissionDomain.textContent = `Allow Claude to interact with ${domain}?`;
@@ -274,6 +283,62 @@ function appendMessage(role, content, extras = {}) {
   scrollToBottom();
 }
 
+async function appendMessageStreaming(content, extras = {}) {
+  const welcome = messagesEl.querySelector(".welcome-message");
+  if (welcome) welcome.remove();
+
+  const msgEl = document.createElement("div");
+  msgEl.className = "message assistant streaming";
+
+  const roleLabel = document.createElement("div");
+  roleLabel.className = "message-role assistant";
+  roleLabel.textContent = "Claude";
+
+  const bubble = document.createElement("div");
+  bubble.className = "message-bubble";
+
+  msgEl.appendChild(roleLabel);
+  msgEl.appendChild(bubble);
+  messagesEl.appendChild(msgEl);
+
+  // Stream text in word by word
+  const words = content.split(/(\s+)/);
+  let rendered = "";
+  const cursor = document.createElement("span");
+  cursor.className = "stream-cursor";
+
+  for (let i = 0; i < words.length; i++) {
+    rendered += words[i];
+    bubble.innerHTML = renderMarkdown(rendered);
+    bubble.appendChild(cursor);
+    scrollToBottom();
+
+    // Variable speed: faster for whitespace, slower for words
+    if (words[i].trim()) {
+      await sleep(15 + Math.random() * 10);
+    }
+  }
+
+  // Remove cursor, finalize
+  cursor.remove();
+  msgEl.classList.remove("streaming");
+  bubble.innerHTML = renderMarkdown(content);
+
+  // Add action buttons
+  if (extras.actions && extras.actions.length > 0) {
+    for (const action of extras.actions) {
+      const actionEl = createActionButton(action);
+      msgEl.appendChild(actionEl);
+    }
+  }
+
+  scrollToBottom();
+}
+
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 function appendSystemMessage(text) {
   const el = document.createElement("div");
   el.className = "action-indicator";
@@ -282,17 +347,37 @@ function appendSystemMessage(text) {
   scrollToBottom();
 }
 
-function showTypingIndicator() {
+function showThinkingIndicator() {
   const el = document.createElement("div");
-  el.className = "typing-indicator";
-  el.id = "typing";
-  el.innerHTML = "<span></span><span></span><span></span>";
+  el.className = "thinking-indicator message assistant";
+  el.id = "thinking";
+
+  const roleLabel = document.createElement("div");
+  roleLabel.className = "message-role assistant";
+  roleLabel.textContent = "Claude";
+
+  const bubble = document.createElement("div");
+  bubble.className = "thinking-bubble";
+  bubble.innerHTML = `
+    <svg class="thinking-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97757" stroke-width="2">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+    </svg>
+    <div class="thinking-shimmer">
+      <div class="shimmer-line"></div>
+      <div class="shimmer-line"></div>
+      <div class="shimmer-line"></div>
+    </div>
+  `;
+
+  el.appendChild(roleLabel);
+  el.appendChild(bubble);
   messagesEl.appendChild(el);
   scrollToBottom();
 }
 
-function hideTypingIndicator() {
-  const el = document.getElementById("typing");
+function hideThinkingIndicator() {
+  const el = document.getElementById("thinking");
   if (el) el.remove();
 }
 
@@ -347,11 +432,20 @@ async function sendMessage() {
     extras.screenshot = pendingScreenshot;
   }
 
+  // Auto-screenshot if enabled
+  if (currentSettings.autoScreenshot && !pendingScreenshot) {
+    const ssResult = await browser.runtime.sendMessage({ type: "CAPTURE_SCREENSHOT" });
+    if (ssResult.screenshot) {
+      pendingScreenshot = ssResult.screenshot;
+      extras.screenshot = pendingScreenshot;
+    }
+  }
+
   appendMessage("user", text, extras);
   messageInput.value = "";
   autoResize();
 
-  showTypingIndicator();
+  showThinkingIndicator();
 
   const result = await browser.runtime.sendMessage({
     type: "SEND_MESSAGE",
@@ -359,17 +453,18 @@ async function sendMessage() {
     screenshot: pendingScreenshot
   });
 
-  hideTypingIndicator();
+  hideThinkingIndicator();
   pendingScreenshot = null;
 
   if (result.error) {
-    // If session expired, prompt re-login
     if (result.error.includes("expired") || result.error.includes("log in")) {
       appendSystemMessage(`Session expired. Please log in again.`);
       setTimeout(() => showSetupScreen(), 1500);
     } else {
       appendSystemMessage(`Error: ${result.error}`);
     }
+  } else if (currentSettings.streamingAnimation) {
+    await appendMessageStreaming(result.text, { actions: result.actions });
   } else {
     appendMessage("assistant", result.text, { actions: result.actions });
   }
