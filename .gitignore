@@ -1,0 +1,11 @@
+# Claude skill files (local only)
+sk/
+.claude/
+
+# Generated helper scripts
+generate_icons.py
+
+# Windows junk
+nul
+Thumbs.db
+desktop.ini

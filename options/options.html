@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Claude for Zen - Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Claude for Zen</h1>
+      <span class="badge">Settings</span>
+    </header>
+
+    <!-- Account -->
+    <section class="card">
+      <h2>Account</h2>
+      <div id="account-pro" class="account-section hidden">
+        <div class="account-info">
+          <div class="account-badge pro">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <span id="pro-plan-label">Claude Pro</span>
+          </div>
+          <p class="hint">Logged in via claude.ai session.</p>
+        </div>
+        <button id="logout-pro" class="btn-danger">Log Out</button>
+      </div>
+      <div id="account-apikey" class="account-section hidden">
+        <div class="account-info">
+          <div class="account-badge api">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span>API Key</span>
+          </div>
+          <p class="hint">Using direct Anthropic API access.</p>
+        </div>
+      </div>
+      <div id="account-none" class="account-section hidden">
+        <p class="description">Not logged in.</p>
+        <button id="login-from-settings" class="btn-primary">Log in with Claude.ai</button>
+      </div>
+    </section>
+
+    <!-- API Configuration -->
+    <section class="card">
+      <h2>API Configuration</h2>
+      <div class="field">
+        <label for="api-key">API Key</label>
+        <div class="input-group">
+          <input type="password" id="api-key" placeholder="sk-ant-...">
+          <button id="toggle-key" class="btn-icon" title="Show/hide key">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <p class="hint">Your key is stored locally and never sent anywhere except the Anthropic API.</p>
+      </div>
+      <div class="field">
+        <label for="model">Model</label>
+        <select id="model">
+          <option value="claude-sonnet-4-5-20250929">Claude Sonnet 4.5 (Recommended)</option>
+          <option value="claude-opus-4-6">Claude Opus 4.6</option>
+          <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (Fastest)</option>
+        </select>
+      </div>
+      <button id="save-api" class="btn-primary">Save API Settings</button>
+      <div id="api-status" class="status hidden"></div>
+    </section>
+
+    <!-- Domain Permissions -->
+    <section class="card">
+      <h2>Domain Permissions</h2>
+      <p class="description">Domains where Claude is allowed to execute actions (click, fill forms, run JS).</p>
+      <div id="domain-list" class="domain-list">
+        <p class="empty-state">No domains allowed yet.</p>
+      </div>
+      <button id="clear-domains" class="btn-danger">Revoke All Permissions</button>
+    </section>
+
+    <!-- Safety -->
+    <section class="card">
+      <h2>Safety</h2>
+      <p class="description">These domains are always blocked for your protection.</p>
+      <div class="blocked-list">
+        <span class="tag">banking sites</span>
+        <span class="tag">paypal.com</span>
+        <span class="tag">coinbase.com</span>
+        <span class="tag">binance.com</span>
+        <span class="tag">robinhood.com</span>
+        <span class="tag">fidelity.com</span>
+        <span class="tag">schwab.com</span>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="card">
+      <h2>About</h2>
+      <p class="description">
+        Claude for Zen v1.0.0<br>
+        A Firefox/Zen browser extension that brings Claude AI to your browser sidebar.<br>
+        Claude can navigate, click, and fill forms in your browser.
+      </p>
+    </section>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude</title>
+  <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+  <!-- Auth Screen -->
+  <div id="setup-screen" class="screen">
+    <div class="setup-container">
+      <div class="logo-section">
+        <svg class="claude-logo" width="40" height="40" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="#D97757"/>
+          <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" fill="#D97757"/>
+          <circle cx="12" cy="12" r="2" fill="#D97757"/>
+        </svg>
+        <h1>Claude for Zen</h1>
+        <p class="subtitle">A helping hand across all your tabs</p>
+      </div>
+
+      <!-- Auth method picker -->
+      <div id="auth-picker" class="auth-picker">
+        <button id="login-pro-btn" class="btn-pro">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <div class="btn-pro-text">
+            <span class="btn-pro-label">Log in with Claude.ai</span>
+            <span class="btn-pro-hint">Pro, Max, Team, or Enterprise</span>
+          </div>
+        </button>
+
+        <div class="auth-divider">
+          <span>or</span>
+        </div>
+
+        <button id="show-apikey-btn" class="btn-secondary">Use API Key</button>
+      </div>
+
+      <!-- Pro login loading state -->
+      <div id="pro-login-state" class="pro-login-state hidden">
+        <div class="spinner-large"></div>
+        <p class="login-status">Opening claude.ai for login...</p>
+        <p class="login-hint">Complete the login in the browser tab that just opened.</p>
+        <button id="cancel-login-btn" class="btn-secondary">Cancel</button>
+      </div>
+
+      <!-- API Key form (hidden by default) -->
+      <div id="apikey-form" class="setup-form hidden">
+        <button id="back-to-picker" class="btn-back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Back
+        </button>
+        <label for="api-key-input">Anthropic API Key</label>
+        <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off">
+        <p class="hint">Get your API key from <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a></p>
+        <select id="model-select">
+          <option value="claude-sonnet-4-5-20250929">Claude Sonnet 4.5</option>
+          <option value="claude-opus-4-6">Claude Opus 4.6</option>
+          <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
+        </select>
+        <button id="save-key-btn" class="btn-primary">Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Chat Screen -->
+  <div id="chat-screen" class="screen hidden">
+    <!-- Header -->
+    <header class="chat-header">
+      <div class="header-left">
+        <svg class="claude-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="#D97757"/>
+          <circle cx="12" cy="12" r="3" fill="#D97757"/>
+        </svg>
+        <span class="header-title">Claude</span>
+        <span class="beta-badge">BETA</span>
+      </div>
+      <div class="header-right">
+        <button id="new-chat-btn" class="icon-btn" title="New conversation">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </button>
+        <button id="settings-btn" class="icon-btn" title="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Auth info bar -->
+    <div id="auth-bar" class="auth-bar hidden">
+      <div class="auth-bar-left">
+        <span id="auth-bar-icon" class="auth-bar-icon"></span>
+        <span id="auth-bar-label" class="auth-bar-label"></span>
+      </div>
+      <select id="model-switcher" class="model-switcher">
+        <option value="claude-sonnet-4-5-20250929">Sonnet 4.5</option>
+        <option value="claude-opus-4-6">Opus 4.6</option>
+        <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
+      </select>
+    </div>
+
+    <!-- Domain Permission Banner -->
+    <div id="permission-banner" class="permission-banner hidden">
+      <div class="permission-content">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97757" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <span id="permission-domain"></span>
+      </div>
+      <div class="permission-actions">
+        <button id="allow-domain-btn" class="btn-small btn-allow">Allow</button>
+        <button id="deny-domain-btn" class="btn-small btn-deny">Deny</button>
+      </div>
+    </div>
+
+    <!-- Messages Area -->
+    <div id="messages" class="messages">
+      <div class="welcome-message">
+        <p>I can help you interact with web pages. I can:</p>
+        <ul>
+          <li>Navigate and click elements</li>
+          <li>Fill out forms</li>
+          <li>Read and summarize page content</li>
+          <li>Execute actions across tabs</li>
+        </ul>
+        <p class="safety-note">I'll ask permission before interacting with each new domain.</p>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+      <div class="input-row">
+        <button id="screenshot-btn" class="icon-btn" title="Capture page screenshot">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+        <textarea id="message-input" placeholder="Ask Claude about this page..." rows="1"></textarea>
+        <button id="send-btn" class="icon-btn send-btn" title="Send message" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="input-footer">
+        <span id="page-context" class="page-context"></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="sidebar.js"></script>
+</body>
+</html>
