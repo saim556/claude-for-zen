@@ -110,6 +110,12 @@ async function handleSetApiKey(message) {
 }
 
 async function handleLoginPro() {
+  // First check if user is already logged in (has valid cookies)
+  const existing = await checkProSession();
+  if (existing.loggedIn) {
+    return { success: true, ...existing };
+  }
+
   // Open claude.ai login page in a new tab
   const tab = await browser.tabs.create({ url: "https://claude.ai/login" });
 
@@ -153,18 +159,19 @@ async function handleLoginPro() {
 
 async function checkProSession() {
   try {
-    const cookieHeader = await getClaudeCookies();
-    if (!cookieHeader) {
+    // Check if any claude.ai cookies exist first
+    const cookies = await browser.cookies.getAll({ domain: ".claude.ai" });
+    if (!cookies || cookies.length === 0) {
       proSession = null;
       return { loggedIn: false };
     }
 
-    // Try to get organizations (proves the session is valid)
+    // Use credentials: "include" so Firefox sends cookies automatically
+    // (manually setting Cookie header is forbidden in fetch)
     const response = await fetch(`${CLAUDE_WEB_BASE}/api/organizations`, {
+      credentials: "include",
       headers: {
-        "Cookie": cookieHeader,
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0"
+        "Content-Type": "application/json"
       }
     });
 
@@ -342,10 +349,6 @@ async function sendViaClaudeWeb(message) {
   if (!tab) return { error: "No active tab" };
 
   const tabId = tab.id;
-  const cookieHeader = await getClaudeCookies();
-  if (!cookieHeader) {
-    return { error: "Session cookies missing. Please log in again." };
-  }
 
   const domain = getDomain(tab.url);
   const orgId = proSession.orgId;
@@ -355,10 +358,9 @@ async function sendViaClaudeWeb(message) {
     if (!webConversations[tabId]) {
       const convResp = await fetch(`${CLAUDE_WEB_BASE}/api/organizations/${orgId}/chat_conversations`, {
         method: "POST",
+        credentials: "include",
         headers: {
-          "Cookie": cookieHeader,
-          "Content-Type": "application/json",
-          "User-Agent": "Mozilla/5.0"
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           name: "",
@@ -405,11 +407,10 @@ async function sendViaClaudeWeb(message) {
       `${CLAUDE_WEB_BASE}/api/organizations/${orgId}/chat_conversations/${conversationId}/completion`,
       {
         method: "POST",
+        credentials: "include",
         headers: {
-          "Cookie": cookieHeader,
           "Content-Type": "application/json",
-          "Accept": "text/event-stream",
-          "User-Agent": "Mozilla/5.0"
+          "Accept": "text/event-stream"
         },
         body: JSON.stringify({
           prompt: promptText,
@@ -546,12 +547,6 @@ async function handleGetTabInfo() {
 // ==========================================
 // UTILITIES
 // ==========================================
-
-async function getClaudeCookies() {
-  const cookies = await browser.cookies.getAll({ domain: ".claude.ai" });
-  if (!cookies || cookies.length === 0) return null;
-  return cookies.map((c) => `${c.name}=${c.value}`).join("; ");
-}
 
 function mapModelToWebModel(modelId) {
   // Map API model IDs to claude.ai web model slugs
